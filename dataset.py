@@ -1,3 +1,9 @@
+"""
+To read the test and train images
+
+I modified train.py https://github.com/sankit1/cv-tricks.com/tree/master/Tensorflow-tutorials/tutorial-2-image-classifier to generate the 3 and used the same code https://github.com/sankit1/cv-tricks.com/tree/master/Tensorflow-tutorials/tutorial-2-image-classifier as 4. Thank you Ankit Sachen! :) Acknowledged!!
+
+"""
 import os
 import glob
 import numpy as np

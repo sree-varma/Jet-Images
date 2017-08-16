@@ -1,3 +1,10 @@
+"""
+The code reades data from the dataset and generate the pre-processed images.
+The pre-processing steps are described in the paper Deep learning in color: towards automated quark/gluon
+jet discrimination (https://arxiv.org/pdf/1612.01551.pdf) section 3.1.
+
+"""
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt

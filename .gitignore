@@ -1,0 +1,9 @@
+.idea
+*.pyc
+data/jet_images_sample
+bin
+include
+lib
+.gitignore
+logs
+pip-selfcheck.json
