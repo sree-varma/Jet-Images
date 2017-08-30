@@ -1,3 +1,8 @@
+"""
+This file contains the preprocessing 1, 2 and 3 of https://arxiv.org/pdf/1612.01551.pdf (Section 3.1)
+
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
