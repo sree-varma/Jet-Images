@@ -148,7 +148,7 @@ Learning configuration
 batch_size = 25
 # validation split
 validation_size = .2
-learning_rate = 0.0005
+learning_rate = 0.00005
 
 # how long to wait after validation loss stops improving before terminating training
 early_stopping = None  # use None if you don't want to implement early stopping
