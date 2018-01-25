@@ -33,7 +33,7 @@ def conv_layer(input, num_input_channels, filter_size, num_filters,drp,name="con
         b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="B")
         conv = tf.nn.conv2d(input, w, strides=[1, 1, 1, 1], padding="SAME")
         act=tf.nn.dropout(conv,drp)
-        act = tf.nn.relu(conv + b)
+        act = tf.nn.relu(act + b)
         tf.summary.histogram("weights", w)
         tf.summary.histogram("biases", b)
         tf.summary.histogram("activations", act)
