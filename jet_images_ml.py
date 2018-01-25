@@ -390,33 +390,3 @@ tprs_quarks_pythia_df.to_csv("Mixed_tprs_pyth_500_color_50h-50p.csv",index=False
 
 
 
-#plt.plot([0, 1], [0, 1], '--', color='black')
-#plt.xlabel('Quark Jet Efficiency')
-#plt.ylabel('Gluon Jet Rejection')
-#for i in range(2):
-
-#plt.plot(tprs[0],1-fprs[0], label='%s (AUC %.2lf)' % (classes[0], aucs[0]))
-#plt.plot(tprs_h[0],1-fprs_h[0], label='%s (AUC %.2lf)' % (classes[0], aucs_h[0]))
-#plt.legend(fontsize=14)
-#plt.show()
-#plt.ylim((0.5,3.5))
-#plt.xlim((0.0,1.0))
-#plt.plot(tprs[0],(tprs[0]/np.sqrt(fprs[0])))
-#plt.show()
-#print fprs
-#print tprs
-
-#total = len(fprs)
-#tp = np.array(tprs)
-#fp=np.array(fprs)
-#print tp,fp
-#writer = tf.summary.FileWriter("/tmp/tensorboard_roc")
-#for idx in range(total):
-#    summt = tf.Summary()
-#    summt.value.add(tag="roc", simple_value = tp[idx])
-#    writer.add_summary (summt, tp[idx] * 100) #act as global_step
-#    writer.flush ()
-
-
-
-
