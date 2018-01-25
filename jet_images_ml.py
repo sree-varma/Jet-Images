@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import pandas as pd
 import numpy as np
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
+#import sklearn.metrics
+from sklearn.metrics import roc_curve, auc
 import time
 from datetime import timedelta
 import math
@@ -24,17 +26,18 @@ Helper Functions
 """
 
 
-def conv_layer(input, num_input_channels, filter_size, num_filters, name="conv"):
+def conv_layer(input, num_input_channels, filter_size, num_filters,drp,name="conv"):
     with tf.name_scope(name):
         shape = [filter_size, filter_size, num_input_channels, num_filters]
         w = tf.Variable(tf.truncated_normal(shape, stddev=0.1), name="W")
         b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="B")
         conv = tf.nn.conv2d(input, w, strides=[1, 1, 1, 1], padding="SAME")
+        act=tf.nn.dropout(conv,drp)
         act = tf.nn.relu(conv + b)
         tf.summary.histogram("weights", w)
         tf.summary.histogram("biases", b)
         tf.summary.histogram("activations", act)
-    return tf.nn.max_pool(act, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
+        return tf.nn.max_pool(act, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
 def fc_layer(input, num_inputs, num_outputs, name="fc"):
@@ -96,7 +99,7 @@ fc_size = 128             # Number of neurons in fully-connected layer.
 num_channels = 3
 
 # image dimensions (only squares for now)
-img_size = 32
+img_size = 33
 
 # Size of image when flattened to a single dimension
 img_size_flat = img_size * img_size * num_channels
@@ -124,15 +127,20 @@ tf.summary.image('input', x_image, 3)
 y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
 y_true_cls = tf.argmax(y_true, dimension=1)
 
-conv1 = conv_layer(input=x_image, num_input_channels=num_channels, filter_size=filter_size1, num_filters=num_filters1, name="conv1")
-#conv_out = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
-conv2 = conv_layer(input=conv1,num_input_channels=num_filters1,filter_size=filter_size2, num_filters=num_filters2,name="conv2")
-conv3 = conv_layer(input=conv2,num_input_channels=num_filters2,filter_size=filter_size3, num_filters=num_filters3,name="conv3")
+conv1 = conv_layer(input=x_image, num_input_channels=num_channels, filter_size=filter_size1, num_filters=num_filters1,drp=0.5,name="conv1")
+conv2 = conv_layer(input=conv1,num_input_channels=num_filters1,filter_size=filter_size2, num_filters=num_filters2,drp=0.25,name="conv2")
+conv3 = conv_layer(input=conv2,num_input_channels=num_filters2,filter_size=filter_size3, num_filters=num_filters3,drp=0.25,name="conv3")
+
 
 layer_flat, num_features = flatten_layer(conv3)
 
 fc1 = fc_layer(input=layer_flat,num_inputs=num_features,num_outputs=fc_size, name="fc1")
+#flat_fc1=fc_layer(input=fc1,num_inputs=fc_size,num_outputs=num_classes, name="flat_fc1")
+#flat_fc1=fc1
+
 sigmoid = tf.nn.sigmoid(fc1)
+
+#flat_fc1=fc_layer(input=sigmoid,num_inputs=fc_size,num_outputs=fc_size, name="flat_fc1")
 tf.summary.histogram("fc1/sigmoid", sigmoid)
 fc2 = fc_layer(input=sigmoid,num_inputs=fc_size,num_outputs=num_classes, name="fc2")
 
@@ -145,25 +153,26 @@ Learning configuration
 """
 
 # batch size
-batch_size = 25
+batch_size = 128
 # validation split
-validation_size = .2
-learning_rate = 0.0005
+validation_size = .1
+learning_rate = 0.00005
 
 # how long to wait after validation loss stops improving before terminating training
-early_stopping = None  # use None if you don't want to implement early stopping
+early_stopping = None # use None if you don't want to implement early stopping
 
 
 """
 Data set Configuration
 """
 
-train_path = 'data/jet_images_sample/train'
-test_path = 'data/jet_images_sample/test'
+train_path ='/usr/mixed_images/50h-50p/train/'
+test_path ='/usr/Herwig/colour/images_500-550GeV/test/'
+test_path1='/usr/Pythia/colour/images_500-550GeV/test/'
 
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
-test_images, test_ids, labels = dataset.read_test_set(test_path, img_size, classes)
-
+test_images, test_ids,test_labels = dataset.read_test_set(test_path, img_size,classes)
+test_pythia_images,test_pythia_ids,test_pythia_labels=dataset.read_test_set(test_path1,img_size,classes)
 print("Size of:")
 print("- Training-set:\t\t{}".format(len(data.train.labels)))
 print("- Test-set:\t\t{}".format(len(test_images)))
@@ -184,24 +193,27 @@ with tf.name_scope("Optimize"):
     
 with tf.name_scope("accuracy"):
     correct_prediction = tf.equal(y_pred_cls, y_true_cls)
+    correct= tf.nn.in_top_k(y_pred, y_true_cls, 1)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar("accuracy", accuracy)
 
 session.run(tf.global_variables_initializer())
 
-logdir = 'logs/classifier/10'
+logdir = 'logs/classifier/colour/feature_pythia500'
 writer = tf.summary.FileWriter(logdir)
 writer.add_graph(session.graph)
 
-eval_writer = tf.summary.FileWriter(logdir + '_eval')
-
+eval_writer = tf.summary.FileWriter(logdir + '_eval')  
 x_batch, _, _, _ = data.train.next_batch(batch_size)
 
 # Add image summary to inspect network input
 tf.summary.image('input', x_batch)
-merged_summary = tf.summary.merge_all()
-
-
+merged_summary = tf.summary.merge_all() 
+saver = tf.train.Saver()
+result = []
+valid=[]
+classifier=[]
+labels=[]
 def optimize(num_iterations, starting_iteration=0):
 
     av_train_acc = 0.0
@@ -217,7 +229,7 @@ def optimize(num_iterations, starting_iteration=0):
 
         x_batch, y_true_batch, _, cls_batch = data.train.next_batch(batch_size)
         x_valid_batch, y_valid_batch, _, valid_cls_batch = data.valid.next_batch(batch_size)
-
+	
         if not convolutional:
             # Convert shape from [num examples, rows, columns, depth]
             # to [num examples, flattened image shape]
@@ -235,39 +247,176 @@ def optimize(num_iterations, starting_iteration=0):
         # to the placeholder variables and then runs the optimizer.
 
         # training step
-        _, train_acc, train_loss = session.run([optimizer, accuracy, cost], feed_dict=feed_dict_train)
-        av_train_acc = av_train_acc + train_acc
-
-        # saver = tf.train.Saver()
-        # saver.save(session, 'my_test_model')
-
+        _, train_acc, train_loss,classifier_features = session.run([optimizer, accuracy, cost,sigmoid], feed_dict=feed_dict_train)
+	av_train_acc = av_train_acc + train_acc
         # validation step
-        validate_acc, val_loss = session.run([accuracy, cost], feed_dict=feed_dict_validate)
+        validate_acc, val_loss,y_result = session.run([accuracy, cost,y_pred], feed_dict=feed_dict_validate)
         av_validate_acc = av_validate_acc + validate_acc
         av_val_loss = av_val_loss + val_loss
-
-        if i % num_batches == 0:
-
-            summary_value = session.run(merged_summary, feed_dict_train)
-            writer.add_summary(summary_value, i)
-
-            summary_value_val = session.run(merged_summary, feed_dict_validate)
-            eval_writer.add_summary(summary_value_val, i)
-            
+	
+        if i % num_batches == 0:            
             epoch = int(i / num_batches)
             av_val_loss /= num_batches
             av_train_acc /= num_batches
             av_validate_acc /= num_batches
 
+
+            summary_value = session.run(merged_summary,feed_dict_train)
+            writer.add_summary(summary_value, i)
+
+            summary_value_val = session.run(merged_summary, feed_dict_validate)
+            eval_writer.add_summary(summary_value_val, i)
+	    #classifier_features=session.run([flat_fc1],feed_dict=feed_dict_train)
+	    #classifier.append(classifier_features)
+	    labels.append(y_true_batch)
             msg = "Epoch {0} --- Training Accuracy: {1:>6.1%}, Validation Accuracy: {2:>6.1%}," \
                   " Training Loss: {3:.3f}, Validation Loss: {4:.3f}"
             print(msg.format(epoch + 1, av_train_acc, av_validate_acc, train_loss,  av_val_loss))
             av_train_acc = 0.0
             av_validate_acc = 0.0
             av_val_loss = 0.0
+            
 
-    final_iteration = starting_iteration + num_iterations
+	final_iteration = starting_iteration + num_iterations
+	#print y_result, y_valid_batch
+#	if int(i % num_batches) >= ((num_iterations % num_batches)-1):
+	#result.append(y_result)
+	#valid.append(y_valid_batch)
+ #   y_score=np.concatenate(result, axis=0 )
+#    print y_score.shape
+#    y_valid=np.concatenate(valid,axis=0)
+#    print y_valid.shape
+
+
+    #features_class=np.concatenate(classifier,axis=0)
+    
+    #feature_labels=np.concatenate(labels,axis=0)
+    
+    #features_class=np.concatenate((features_class,feature_labels),axis=1)
+    #print features_class.shape
+    #features_classifier=pd.DataFrame(features_class)
+    #features_classifier.to_csv("Features_Pythia_500.csv",index=False)
+    
+	
+#    fprs, tprs = [None] * 2, [None] * 2
+#    aucs = [None] * 2
+#    for i in range(2):
+#    	fprs[i], tprs[i], _ = roc_curve(y_valid[:, i], y_score[:, i])
+#    	aucs[i] = auc(fprs[i], tprs[i], reorder=True)
+
+    #plt.figure(figsize=(8, 8))
+    #plt.plot([0, 1], [0, 1], '--', color='black')
+
+    #plt.title('One-vs-rest ROC curves', fontsize=16)
+
+    #plt.xlabel('Quark Jet Efficiency')
+    #plt.ylabel('Gluon Jet Rejection')
+    #g_r=(tprs[0]+fprs[1])
+    #q_e=(tprs[1]+fprs[0])
+    #for i in range(2):
+    #plt.plot(1-fprs[0],tprs[0], label='%s (AUC %.2lf)' % (classes[0], aucs[0]))
+    
+    #plt.ylim((0.5,3.5))
+    #plt.xlim((0.0,1.0))
+    #plt.plot(tprs[0],(tprs[0]/np.sqrt(fprs[0])))
+    
+    #fprs_quarks_pythia= pd.DataFrame({"fprs_quarks_pythia":fprs[0]})
+    #tprs_quarks_pythia= pd.DataFrame({"tprs_quarks_pythia":tprs[0]})
+    #fprs_quarks_pythia.to_csv("Herwig_fprs_pyth_500_valid_color.csv",index=False)
+    #tprs_quarks_pythia.to_csv("Herwig_tprs_pyth_500_valid_color.csv",index=False)
+     
+    #print tprs[0]
+    #print fprs[0]
+    #plt.legend(fontsize=14)
+    #plt.plot(q_e,g_r)
+    #plt.show()
+    
     return final_iteration
 
+optimize(num_iterations=70310)#35156)#2812)#7031)
 
-optimize(num_iterations=10000)
+
+
+
+def sample_prediction(test_im,test_label):
+    
+    feed_dict_test = {x: test_im.reshape(1, img_size, img_size, num_channels),y_true:np.array([[1, 0]])}#np.array([[1, 0]])}
+
+    test_pred = session.run(y_pred, feed_dict=feed_dict_test)
+    return test_pred
+output=[]
+output_pythia=[]
+fprs, tprs = [None] * 2, [None] * 2
+aucs = [None] * 2
+
+fprs_p, tprs_p = [None] * 2, [None] * 2
+aucs_p = [None] * 2
+
+for i in range(0,len(test_images)):
+	output.append(sample_prediction(test_images[i],test_labels))
+for i in range(0,len(test_pythia_images)):
+	output_pythia.append(sample_prediction(test_pythia_images[i],test_pythia_labels))
+	
+
+y_test=np.concatenate(output, axis=0 )
+#y_test=y_test.astype(np.float64)
+
+y_test_pythia=np.concatenate(output_pythia, axis=0 )
+
+#y_test_herwig=y_test_herwig.astype(np.float64)
+#print y_test
+#test_labels=test_labels.astype(np.float64)
+#test_herwig_labels=test_herwig_labels.astype(np.float64)
+#print y_test
+for i in range(2):
+    	fprs[i], tprs[i], _ = roc_curve((test_labels[:, i]),y_test[:,i])
+	fprs_p[i],tprs_p[i],_=roc_curve(test_pythia_labels[:, i],y_test_pythia[:,i])
+	aucs[i] = auc(fprs[i], tprs[i], reorder=True)
+	aucs_p[i] = auc(fprs_p[i], tprs_p[i], reorder=True)
+print fprs[0]
+print tprs[0]
+
+fprs_quarks_herwig_df = pd.DataFrame({"fprs_quarks_herwig":fprs[0]})
+tprs_quarks_herwig_df= pd.DataFrame({"tprs_quarks_herwig":tprs[0]})
+fprs_quarks_pythia_df = pd.DataFrame({"fprs_quarks_pythia":fprs_p[0]})
+tprs_quarks_pythia_df= pd.DataFrame({"tprs_quarks_pythia":tprs_p[0]})
+
+
+
+fprs_quarks_herwig_df.to_csv("Mixed_fprs_her_500_color_50h-50p.csv",index=False)
+tprs_quarks_herwig_df.to_csv("Mixed_tprs_her_500_color_50h-50p.csv",index=False)
+fprs_quarks_pythia_df.to_csv("Mixed_fprs_pyth_500_color_50h-50p.csv",index=False)
+tprs_quarks_pythia_df.to_csv("Mixed_tprs_pyth_500_color_50h-50p.csv",index=False)
+
+
+
+#plt.plot([0, 1], [0, 1], '--', color='black')
+#plt.xlabel('Quark Jet Efficiency')
+#plt.ylabel('Gluon Jet Rejection')
+#for i in range(2):
+
+#plt.plot(tprs[0],1-fprs[0], label='%s (AUC %.2lf)' % (classes[0], aucs[0]))
+#plt.plot(tprs_h[0],1-fprs_h[0], label='%s (AUC %.2lf)' % (classes[0], aucs_h[0]))
+#plt.legend(fontsize=14)
+#plt.show()
+#plt.ylim((0.5,3.5))
+#plt.xlim((0.0,1.0))
+#plt.plot(tprs[0],(tprs[0]/np.sqrt(fprs[0])))
+#plt.show()
+#print fprs
+#print tprs
+
+#total = len(fprs)
+#tp = np.array(tprs)
+#fp=np.array(fprs)
+#print tp,fp
+#writer = tf.summary.FileWriter("/tmp/tensorboard_roc")
+#for idx in range(total):
+#    summt = tf.Summary()
+#    summt.value.add(tag="roc", simple_value = tp[idx])
+#    writer.add_summary (summt, tp[idx] * 100) #act as global_step
+#    writer.flush ()
+
+
+
+
