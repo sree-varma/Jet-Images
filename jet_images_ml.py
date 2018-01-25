@@ -187,7 +187,6 @@ with tf.name_scope("Optimize"):
     
 with tf.name_scope("accuracy"):
     correct_prediction = tf.equal(y_pred_cls, y_true_cls)
-    correct= tf.nn.in_top_k(y_pred, y_true_cls, 1)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar("accuracy", accuracy)
 
