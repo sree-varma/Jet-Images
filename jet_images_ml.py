@@ -135,18 +135,12 @@ conv3 = conv_layer(input=conv2,num_input_channels=num_filters2,filter_size=filte
 layer_flat, num_features = flatten_layer(conv3)
 
 fc1 = fc_layer(input=layer_flat,num_inputs=num_features,num_outputs=fc_size, name="fc1")
-#flat_fc1=fc_layer(input=fc1,num_inputs=fc_size,num_outputs=num_classes, name="flat_fc1")
-#flat_fc1=fc1
-
-sigmoid = tf.nn.sigmoid(fc1)
-
-#flat_fc1=fc_layer(input=sigmoid,num_inputs=fc_size,num_outputs=fc_size, name="flat_fc1")
-tf.summary.histogram("fc1/sigmoid", sigmoid)
-fc2 = fc_layer(input=sigmoid,num_inputs=fc_size,num_outputs=num_classes, name="fc2")
-
-y_pred = fc2
-y_pred_cls = tf.argmax(y_pred, dimension=1)
-
+activated_fc1 = tf.nn.relu(fc1)
+fc2 = fc_layer(input=activated_fc1, num_inputs=fc_size, num_outputs=num_classes, name="fc2")
+#y_pred = fc2
+#y_pred_cls = tf.argmax(y_pred, dimension=1)
+y_prob = tf.nn.softmax(fc_2)
+y_pred = tf.argmax(y_prob, dimension=1)
 
 """
 Learning configuration
@@ -185,7 +179,7 @@ Loss Function + Optimization
 """
 
 with tf.name_scope("cost"):
-    cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=fc2, labels=y_true)
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=y_true)
     cost = tf.reduce_mean(cross_entropy)
     tf.summary.scalar("cost", cost)
 with tf.name_scope("Optimize"):
@@ -247,7 +241,7 @@ def optimize(num_iterations, starting_iteration=0):
         # to the placeholder variables and then runs the optimizer.
 
         # training step
-        _, train_acc, train_loss,classifier_features = session.run([optimizer, accuracy, cost,sigmoid], feed_dict=feed_dict_train)
+        _, train_acc, train_loss,classifier_features = session.run([optimizer, accuracy, cost, activated_fc1], feed_dict=feed_dict_train)
 	av_train_acc = av_train_acc + train_acc
         # validation step
         validate_acc, val_loss,y_result = session.run([accuracy, cost,y_pred], feed_dict=feed_dict_validate)
