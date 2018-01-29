@@ -240,7 +240,7 @@ def optimize(num_iterations, starting_iteration=0):
         # to the placeholder variables and then runs the optimizer.
 
         # training step
-        _, train_acc, train_loss,classifier_features = session.run([optimizer, accuracy, cost, activated_fc1], feed_dict=feed_dict_train)
+        _, train_acc, train_loss = session.run([optimizer, accuracy, cost], feed_dict=feed_dict_train)
 	av_train_acc = av_train_acc + train_acc
         # validation step
         validate_acc, val_loss,y_result = session.run([accuracy, cost,y_pred], feed_dict=feed_dict_validate)
@@ -259,9 +259,9 @@ def optimize(num_iterations, starting_iteration=0):
 
             summary_value_val = session.run(merged_summary, feed_dict_validate)
             eval_writer.add_summary(summary_value_val, i)
-	    #classifier_features=session.run([flat_fc1],feed_dict=feed_dict_train)
-	    #classifier.append(classifier_features)
-	    labels.append(y_true_batch)
+	    classifier_features=session.run([activated_fc1],feed_dict=feed_dict_train)
+	    classifier.append(classifier_features)
+	    #labels.append(y_true_batch)
             msg = "Epoch {0} --- Training Accuracy: {1:>6.1%}, Validation Accuracy: {2:>6.1%}," \
                   " Training Loss: {3:.3f}, Validation Loss: {4:.3f}"
             print(msg.format(epoch + 1, av_train_acc, av_validate_acc, train_loss,  av_val_loss))
@@ -281,14 +281,14 @@ def optimize(num_iterations, starting_iteration=0):
 #    print y_valid.shape
 
 
-    #features_class=np.concatenate(classifier,axis=0)
+    features_class=np.concatenate(classifier,axis=0)
     
     #feature_labels=np.concatenate(labels,axis=0)
     
-    #features_class=np.concatenate((features_class,feature_labels),axis=1)
+    features_class=np.concatenate(features_class,axis=1)
     #print features_class.shape
-    #features_classifier=pd.DataFrame(features_class)
-    #features_classifier.to_csv("Features_Pythia_500.csv",index=False)
+    features_classifier=pd.DataFrame(features_class)
+    features_classifier.to_csv("Features_Pythia_500.csv",index=False)
     
 	
 #    fprs, tprs = [None] * 2, [None] * 2
