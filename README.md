@@ -34,6 +34,11 @@ You can monitor progress with Tensorboard using
 tensorboard --logdir path/to/logdir
 ```
 
+To evaluate the resulting model / extract features run
+
+```bash
+python evaluate.py
+```
 ## Appendix
 
 ### Dataset
