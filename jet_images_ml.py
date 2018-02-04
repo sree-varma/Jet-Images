@@ -22,7 +22,7 @@ Inputs
 convolutional = True
 
 # image dimensions (only squares for now)
-img_size = 32
+img_size = 33
 
 num_channels = 3
 # Size of image when flattened to a single dimension
@@ -64,25 +64,26 @@ Learning configuration
 """
 
 # batch size
-batch_size = 25
+batch_size = 128
 # validation split
 validation_size = .2
-learning_rate = 0.0005
+learning_rate = 0.00005
 
 # how long to wait after validation loss stops improving before terminating training
-early_stopping = None  # use None if you don't want to implement early stopping
+early_stopping = None # use None if you don't want to implement early stopping
 
 
 """
 Data set Configuration
 """
 
-train_path = 'data/jet_images_sample/train'
-test_path = 'data/jet_images_sample/test'
+train_path ='/usr/mixed_images/50h-50p/train/'
+test_path ='/usr/Herwig/colour/images_500-550GeV/test/'
+test_path1='/usr/Pythia/colour/images_500-550GeV/test/'
 
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
-test_images, test_ids, labels = dataset.read_test_set(test_path, img_size, classes)
-
+test_images, test_ids,test_labels = dataset.read_test_set(test_path, img_size,classes)
+test_pythia_images,test_pythia_ids,test_pythia_labels=dataset.read_test_set(test_path1,img_size,classes)
 print("Size of:")
 print("- Training-set:\t\t{}".format(len(data.train.labels)))
 print("- Test-set:\t\t{}".format(len(test_images)))
@@ -117,21 +118,18 @@ with tf.name_scope("accuracy"):
 
 session.run(tf.global_variables_initializer())
 
-logdir = 'logs/classifier/10'
+logdir = 'logs/classifier/colour/feature_pythia500'
 writer = tf.summary.FileWriter(logdir)
 writer.add_graph(session.graph)
 
-eval_writer = tf.summary.FileWriter(logdir + '_eval')
-
+eval_writer = tf.summary.FileWriter(logdir + '_eval')  
 x_batch, _, _, _ = data.train.next_batch(batch_size)
 
 # Add image summary to inspect network input
 tf.summary.image('input', x_batch)
 merged_summary = tf.summary.merge_all()
 
-
 saver = tf.train.Saver()
-
 
 def optimize(num_iterations, starting_iteration=0):
 
@@ -200,8 +198,99 @@ def optimize(num_iterations, starting_iteration=0):
             print(msg.format(epoch + 1, av_train_acc, av_validate_acc, train_loss,  av_val_loss))
             av_train_acc = 0.0
 
+	
+#    fprs, tprs = [None] * 2, [None] * 2
+#    aucs = [None] * 2
+#    for i in range(2):
+#    	fprs[i], tprs[i], _ = roc_curve(y_valid[:, i], y_score[:, i])
+#    	aucs[i] = auc(fprs[i], tprs[i], reorder=True)
+
+    #plt.figure(figsize=(8, 8))
+    #plt.plot([0, 1], [0, 1], '--', color='black')
+
+    #plt.title('One-vs-rest ROC curves', fontsize=16)
+
+    #plt.xlabel('Quark Jet Efficiency')
+    #plt.ylabel('Gluon Jet Rejection')
+    #g_r=(tprs[0]+fprs[1])
+    #q_e=(tprs[1]+fprs[0])
+    #for i in range(2):
+    #plt.plot(1-fprs[0],tprs[0], label='%s (AUC %.2lf)' % (classes[0], aucs[0]))
+    
+    #plt.ylim((0.5,3.5))
+    #plt.xlim((0.0,1.0))
+    #plt.plot(tprs[0],(tprs[0]/np.sqrt(fprs[0])))
+    
+    #fprs_quarks_pythia= pd.DataFrame({"fprs_quarks_pythia":fprs[0]})
+    #tprs_quarks_pythia= pd.DataFrame({"tprs_quarks_pythia":tprs[0]})
+    #fprs_quarks_pythia.to_csv("Herwig_fprs_pyth_500_valid_color.csv",index=False)
+    #tprs_quarks_pythia.to_csv("Herwig_tprs_pyth_500_valid_color.csv",index=False)
+     
+    #print tprs[0]
+    #print fprs[0]
+    #plt.legend(fontsize=14)
+    #plt.plot(q_e,g_r)
+    #plt.show()
     final_iteration = starting_iteration + num_iterations
+
     return final_iteration
 
+optimize(num_iterations=0)#35156)#2812)#7031)
 
-optimize(num_iterations=10000)
+
+#TODO: please cleanup the all the commented code. These kind of scrappy changes should not be commited to master branch
+# any new and reusable functionality can be written as a resuable function and store in the appropriate file
+# this file is for training the network
+
+# def sample_prediction(test_im,test_label):
+#
+#     feed_dict_test = {x: test_im.reshape(1, img_size, img_size, num_channels),y_true:np.array([[1, 0]])}#np.array([[1, 0]])}
+#
+#     test_pred = session.run(y_pred, feed_dict=feed_dict_test)
+#     return test_pred
+# output=[]
+# output_pythia=[]
+# fprs, tprs = [None] * 2, [None] * 2
+# aucs = [None] * 2
+#
+# fprs_p, tprs_p = [None] * 2, [None] * 2
+# aucs_p = [None] * 2
+#
+# for i in range(0,len(test_images)):
+# 	output.append(sample_prediction(test_images[i],test_labels))
+# for i in range(0,len(test_pythia_images)):
+# 	output_pythia.append(sample_prediction(test_pythia_images[i],test_pythia_labels))
+#
+#
+# y_test=np.concatenate(output, axis=0 )
+# #y_test=y_test.astype(np.float64)
+#
+# y_test_pythia=np.concatenate(output_pythia, axis=0 )
+#
+# #y_test_herwig=y_test_herwig.astype(np.float64)
+# #print y_test
+# #test_labels=test_labels.astype(np.float64)
+# #test_herwig_labels=test_herwig_labels.astype(np.float64)
+# #print y_test
+# for i in range(2):
+#     	fprs[i], tprs[i], _ = roc_curve((test_labels[:, i]),y_test[:,i])
+# 	fprs_p[i],tprs_p[i],_=roc_curve(test_pythia_labels[:, i],y_test_pythia[:,i])
+# 	aucs[i] = auc(fprs[i], tprs[i], reorder=True)
+# 	aucs_p[i] = auc(fprs_p[i], tprs_p[i], reorder=True)
+# print fprs[0]
+# print tprs[0]
+#
+# fprs_quarks_herwig_df = pd.DataFrame({"fprs_quarks_herwig":fprs[0]})
+# tprs_quarks_herwig_df= pd.DataFrame({"tprs_quarks_herwig":tprs[0]})
+# fprs_quarks_pythia_df = pd.DataFrame({"fprs_quarks_pythia":fprs_p[0]})
+# tprs_quarks_pythia_df= pd.DataFrame({"tprs_quarks_pythia":tprs_p[0]})
+#
+#
+#
+# fprs_quarks_herwig_df.to_csv("Mixed_fprs_her_500_color_50h-50p.csv",index=False)
+# tprs_quarks_herwig_df.to_csv("Mixed_tprs_her_500_color_50h-50p.csv",index=False)
+# fprs_quarks_pythia_df.to_csv("Mixed_fprs_pyth_500_color_50h-50p.csv",index=False)
+# tprs_quarks_pythia_df.to_csv("Mixed_tprs_pyth_500_color_50h-50p.csv",index=False)
+#
+#
+#
