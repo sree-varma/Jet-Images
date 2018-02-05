@@ -18,11 +18,12 @@ def conv_layer(input, num_input_channels, filter_size, num_filters, name="conv")
     return tf.nn.max_pool(act, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
-def fc_layer(input, num_inputs, num_outputs, name="fc"):
+def fc_layer(input, num_inputs, num_outputs, activation_fn, name="fc"):
     with tf.name_scope(name):
         w = tf.Variable(tf.truncated_normal([num_inputs, num_outputs], stddev=0.1), name="W")
         b = tf.Variable(tf.constant(0.1, shape=[num_outputs]), name="B")
-        act = tf.matmul(input, w) + b
+        pre_act = tf.matmul(input, w) + b
+        act = activation_fn(pre_act)
         tf.summary.histogram("weights", w)
         tf.summary.histogram("biases", b)
         tf.summary.histogram("activations", act)
@@ -87,8 +88,8 @@ def inference(image, num_classes):
 
     layer_flat, num_features = flatten_layer(conv3)
 
-    fc1 = fc_layer(input=layer_flat, num_inputs=num_features, num_outputs=fc_size, name="fc1")
+    fc1 = fc_layer(input=layer_flat, num_inputs=num_features, num_outputs=fc_size, activation_fn=tf.nn.relu, name="fc1")
 
-    logits = fc_layer(input=fc1, num_inputs=fc_size, num_outputs=num_classes, name="fc2")
+    logits = fc_layer(input=fc1, num_inputs=fc_size, num_outputs=num_classes, activation_fn=tf.identity, name="fc2")
 
     return logits, fc1

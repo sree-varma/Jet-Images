@@ -184,7 +184,7 @@ def optimize(num_iterations, starting_iteration=0):
             summary_value_val = session.run(merged_summary, feed_dict_validate)
             eval_writer.add_summary(summary_value_val, i)
 
-        if i % saving_freq:
+        if i % saving_freq == 0:
             if not os.path.exists('saved_models'):
                 os.makedirs('save_models')
             saver.save(session, './saved_models/saved_model_{}.ckpt'.format(i))
