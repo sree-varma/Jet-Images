@@ -64,10 +64,10 @@ Learning configuration
 """
 
 # batch size
-batch_size = 128
+batch_size = 25
 # validation split
 validation_size = .2
-learning_rate = 0.00005
+learning_rate = 0.001
 
 # how long to wait after validation loss stops improving before terminating training
 early_stopping = None # use None if you don't want to implement early stopping
@@ -77,13 +77,12 @@ early_stopping = None # use None if you don't want to implement early stopping
 Data set Configuration
 """
 
-train_path ='/usr/mixed_images/50h-50p/train/'
-test_path ='/usr/Herwig/colour/images_500-550GeV/test/'
-test_path1='/usr/Pythia/colour/images_500-550GeV/test/'
+train_path = 'data/jet_images_sample/train'
+test_path = 'data/jet_images_sample/test'
 
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
-test_images, test_ids,test_labels = dataset.read_test_set(test_path, img_size,classes)
-test_pythia_images,test_pythia_ids,test_pythia_labels=dataset.read_test_set(test_path1,img_size,classes)
+test_images, test_ids, test_labels = dataset.read_test_set(test_path, img_size, classes)
+test_pythia_images, test_pythia_ids, test_pythia_labels = dataset.read_test_set(test_path, img_size, classes)
 print("Size of:")
 print("- Training-set:\t\t{}".format(len(data.train.labels)))
 print("- Test-set:\t\t{}".format(len(test_images)))
@@ -92,7 +91,7 @@ print("- Validation-set:\t{}".format(len(data.valid.labels)))
 num_batches = int(data.train.num_examples/batch_size)
 
 """
-Evaluation Configureation
+Evaluation Configuration
 """
 
 valdiation_batches = 20
@@ -130,6 +129,7 @@ tf.summary.image('input', x_batch)
 merged_summary = tf.summary.merge_all()
 
 saver = tf.train.Saver()
+
 
 def optimize(num_iterations, starting_iteration=0):
 
@@ -235,7 +235,7 @@ def optimize(num_iterations, starting_iteration=0):
 
     return final_iteration
 
-optimize(num_iterations=0)#35156)#2812)#7031)
+optimize(num_iterations=1000)#35156)#2812)#7031)
 
 
 #TODO: please cleanup the all the commented code. These kind of scrappy changes should not be commited to master branch
