@@ -251,12 +251,8 @@ print "Creating jet images :) "
 #==============================================================#
 
 for index,j in enumerate(gi_gluon): # For all values and their corresponding indices in g_i
-        if gi_gluon[index-1]+1<gi_gluon[index]:
-                for k in range(0,x):
-                        for j in range(0,y):
-                                gluon[j,k,index]=gluon[j,k,index]-mean_image[j,k] #Step 4 : Zerocentering
-                                gluon[j,k,index]=gluon[j,k,index]/(std_image[j,k]+r) #Step5: Standardize
-
+	gluon[:,:,index]=gluon[:,:,index]-mean_image #Step 4 : Zerocentering
+	gluon[:,:,index]=gluon[:,:,index]/(std_image+r) #Step5: Standardize
 
 av_gluon=np.mean(gluon,axis=2)
 plt.rcParams['axes.facecolor'] = 'white'
@@ -283,12 +279,8 @@ plt.close()
 
 
 for index,j in enumerate(gi_quark): # For all values and their corresponding indices in g_i
-        if gi_quark[index-1]+1<gi_quark[index]:
-                for k in range(0,x):
-                        for j in range(0,y):
-                                quark[j,k,index]=quark[j,k,index]-mean_image[j,k] #Step 4 : Zerocentering
-                                quark[j,k,index]=quark[j,k,index]/(std_image[j,k]+r) #Step5: Standardize
-
+	quark[:,:,index]=quark[:,:,index]-mean_image #Step 4 : Zerocentering
+	quark[:,:,index]=quark[:,:,index]/(std_image+r) #Step5: Standardize
 
 
 
