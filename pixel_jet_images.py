@@ -67,7 +67,7 @@ def image_array(index_array,image_array,df_image,q):
                                         image_array[j,k,index]= image_array[j,k,index]+pT[i]#image is an 3D array, each layer gives an image
                                         
 
-                total_pT=np.sum(image_array)# Total pT in an image
+                total_pT=np.sum(image_array[:,:,index])# Total pT in an image
                 
                 image_array[:,:,index] = image_array[:,:,index]/total_pT #Normalisation
     temp1=image_array        #return image_array
