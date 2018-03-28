@@ -83,18 +83,23 @@ for i in range(num_batches):
 
     feed_dict = {x: test_image_batch, y_true:  test_label_batch}
 
-    y_pred_value, features_value = session.run([y_pred, features], feed_dict=feed_dict)
+    y_pred_value, features_value = session.run([y_probs, features], feed_dict=feed_dict)
 
     #TODO: save features for reuse later
     predictions.extend(y_pred_value)
-    true_labels.extend(list(np.argmax(test_label_batch, axis=1)))
+    true_labels.extend(test_label_batch)
 
-print("Accuracy: {}".format(accuracy_score(true_labels, predictions)))
-print("Precision_score: {}".format(precision_score(true_labels, predictions)))
-print("Recall_score: {}".format(recall_score(true_labels, predictions)))
-print("F1_score: {}".format(f1_score(true_labels, predictions)))
-fpr, tpr, thresholds = roc_curve(true_labels, predictions)
+fprs, tprs = [None] * 2, [None] * 2
+aucs = [None] * 2
+for i in range(2):
+    	fprs[i], tprs[i], _ = roc_curve((true_labels[:, i]),predictions[:,i])
+    	aucs[i] = auc(fprs[i], tprs[i], reorder=True)
 
-plt.figure()
-plt.plot(fpr, tpr)
+plt.plot([0, 1], [0, 1], '--', color='black')
+plt.xlabel('Quark Jet Efficiency(True Positive)')
+plt.ylabel('Gluon Jet Rejection(False Negative)')
+
+
+plt.plot(tprs[0],1-fprs[0], label='%s (AUC %.2lf)' % ("---- CNN on ----- color images", aucs))
+plt.legend(fontsize=10,loc=3)
 plt.show()
