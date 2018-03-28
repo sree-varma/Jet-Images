@@ -25,30 +25,24 @@ path=''# Path of the program
 #1.Quarks
 #--------
 
-pathq1='/usr/Pythia/data/'#'/home/k1629656/Jets/Pythia/pythia_gg2qqbar/'
-pathq2='/usr/Pythia/data/'#'/home/k1629656/Jets/Pythia/pythia_qq2qq/' 
-pathq3='/usr/Pythia/data/'#'/home/k1629656/Jets/Pythia/pythia_qqbar2qqbar/'
+pathq1='/Pythia/data/'
+pathq2='/Pythia/data/'
 
 
 #2.Gluons
 #---------
-pathg1 = '/usr/Pythia/data/'#'/home/k1629656/Jets/Pythia/pythia_gg2gg/'
-pathg2='/usr/Pythia/data/'#'/home/k1629656/Jets/Pythia/pythia_qqbar2gg/' 
+pathg1 = '/usr/Pythia/data/'
+pathg2='/usr/Pythia/data/'
 
 #3.Images
 #--------
-#train_qimage_path='/home/k1629656/Jets/Herwig/100-110GeV/color_sample/'#'/usr/Herwig/images_100-110GeV/train/gluons/' #'/home/k1629656/Jets/train/gluons/'#'/usr/Herwig/gluon_jets/images_100-110GeV'#\
-#test_qimage_path='/home/k1629656/Jets/Herwig/100-110GeV/color_sample/'#'/usr//Herwig/images_100-110GeV/test/gluons/' #'/home/k1629656/Jets/test/gluons/'
 
 
-train_qimage_path='/usr/Pythia/colour/images_200-220GeV/train/quarks/'#'/home/k1629656/Jets/herwig_100/train/quarks'#'/home/k1629656/Jets/train/quarks/'#'/usr/Herwig/gluon_jets/images_100-110GeV'#\
-test_qimage_path='/usr/Pythia/colour/images_200-220GeV/test/quarks'#'/home/k1629656/Jets/herwig_100/test/quarks'#'/home/k1629656/Jets/test/quarks/'
+train_qimage_path='/Pythia/colour/images/train/quarks/'
+test_qimage_path='/Pythia/colour/images/test/quarks'
 
-
-#train_gimage_path='/home/k1629656/Jets/Herwig/100-110GeV/color_sample/'#'/usr/Herwig/images_100-110GeV/train/gluons/' #'/home/k1629656/Jets/train/gluons/'#'/usr/Herwig/gluon_jets/images_100-110GeV'#\
-#test_gimage_path='/home/k1629656/Jets/Herwig/100-110GeV/color_sample/'#'/usr//Herwig/images_100-110GeV/test/gluons/' #'/home/k1629656/Jets/test/gluons/'
-train_gimage_path='/usr/Pythia/colour/images_200-220GeV/train/gluons/'
-test_gimage_path='/usr/Pythia/colour/images_200-220GeV/test/gluons/'
+train_gimage_path='/Pythia/colour/images/train/gluons/'
+test_gimage_path='/Pythia/colour/images/test/gluons/'
 
 #FILES
 #======
@@ -78,28 +72,27 @@ df_gluon1 = pd.read_csv(pathg1+gluonFile1,dtype=None,delimiter=",")
 df_gluon2 = pd.read_csv(pathg2+gluonFile2,dtype=None,delimiter=",")
 
 df_gluon = pd.concat([df_gluon1,df_gluon2],ignore_index=True,axis=0)
-#df_gluon.to_csv('herwig_gloun_jet_120000_100-110_jet_image.dat',index = False)
+
 
 ggluon= df_gluon.loc[df_gluon['ETA']=='@@@'] 
 gi_gluon = ggluon.index # Indices of '@@@'
-#gi_gluon=gi_gluon[:100000]
 
 gquark1= df_quark1.loc[df_quark1['ETA']=='@@@'] # The locations where the events end which is given in the simulation as '@@@'
 gi_quark1 = gquark1.index # Indices of '@@@'##
-#gi_quark1= gi_quark1[:40000]
+
 gquark2= df_quark2.loc[df_quark2['ETA']=='@@@'] 
 gi_quark2 = gquark2.index
-#gi_quark2=gi_quark2[:30000] 
+
 gquark3= df_quark3.loc[df_quark3['ETA']=='@@@'] 
 gi_quark3 = gquark3.index 
-#gi_quark3=gi_quark3[:30000]
+
 
 ggluon1= df_gluon1.loc[df_gluon1['ETA']=='@@@']
 gi_gluon1 = ggluon1.index
-#gi_gluon1=gi_gluon1[:50000] 
+
 ggluon2= df_gluon2.loc[df_gluon2['ETA']=='@@@'] 
 gi_gluon2 = ggluon2.index 
-#gi_gluon2=gi_gluon2[:50000]
+
 
 
 delta = 0.8/33 # length of each pixel
@@ -187,10 +180,6 @@ quark3_c2=np.array(quark3_c2).reshape((33,33,a3))
 quark3_c3=np.array(quark3_c3).reshape((33,33,a3))
 
 print "Quark image array created!"
-
-#gluon1_c1,gluon1_c2,gluon1_c3=pixel_c.image_array(gi_gluon1,gluon1_c1,gluon1_c2,gluon1_c3,df_gluon1)
-#gluon2_c1,gluon2_c2,gluon2_c3=pixel_c.image_array(gi_gluon2,gluon2_c1,gluon2_c2,gluon2_c3,df_gluon2)
-
 
 gluon1_c1,gluon1_c2,gluon1_c3=g1.get()
 gluon2_c1,gluon2_c2,gluon2_c3=g2.get()
@@ -305,8 +294,7 @@ mean[:,:,:,1]=mean_gluon
 std =np.zeros((33,33,3,2),dtype=float)
 std[:,:,:,0]=std_quark
 std[:,:,:,1]=std_gluon
-#std_image=np.std(std,axis=3)
-#std_image=np.std(std_image,axis=2)
+
 print "Mean images creating"
 
 
@@ -323,12 +311,6 @@ print "Creating jet images :) "
 
 
 
-#gluon_c1=pixel_c.jet_images(gi_gluon,x_g,y_g,gluon_c1,mean_gluon_c1,std_gluon_c1)
-#gluon_c2=pixel_c.jet_images(gi_gluon,x_g,y_g,gluon_c2,mean_gluon_c2,std_gluon_c2)
-#gluon_c3=pixel_c.jet_images(gi_gluon,x_g,y_g,gluon_c3,mean_gluon_c3,std_gluon_c3)
-
-
-
 for index,j in enumerate(gi_gluon): # For all values and their corresponding indices in g_i
 	gluon_c1[:,:,index]=gluon_c1[:,:,index]-mean_image[:,:,0] #Step 4 : Zerocentering
 	gluon_c1[:,:,index]=gluon_c1[:,:,index]/(std_image[:,:,0]+r) #Step5: Standardize
@@ -340,7 +322,7 @@ for index,j in enumerate(gi_gluon): # For all values and their corresponding ind
         gluon_c3[:,:,index]=gluon_c3[:,:,index]/(std_image[:,:,2]+r) 
 
 	gluon_image[:,:,:,index]= np.dstack((gluon_c1[:,:,index],gluon_c2[:,:,index],gluon_c3[:,:,index]))
- 	#gluon_image[:,:,:,index]= gluon_image[:,:,:,index]/(std_image+r)gluon_image[:,:,:,index]-mean_image
+ 	
 
 
  
@@ -352,9 +334,7 @@ av_gluon = av_gluon*(256./np.amax(av_gluon))
 av2_imgfile ='av_image_pythia1_2_color.jpeg'
 avg_gluon=cv2.imwrite(os.path.join(path,av2_imgfile), av_gluon)
 
-#quark_c1=pixel_c.jet_images(gi_quark,x_q,y_q,quark_c1,mean_quark_c1,std_quark_c1)
-#quark_c2=pixel_c.jet_images(gi_quark,x_q,y_q,quark_c2,mean_quark_c2,std_quark_c2)
-#quark_c3=pixel_c.jet_images(gi_quark,x_q,y_q,quark_c3,mean_quark_c3,std_quark_c3)
+
 
 
 for index,j in enumerate(gi_quark): # For all values and their corresponding indices in g_i
@@ -368,8 +348,7 @@ for index,j in enumerate(gi_quark): # For all values and their corresponding ind
         quark_c3[:,:,index]=quark_c3[:,:,index]/(std_image[:,:,2]+r) 
 
 	quark_image[:,:,:,index]= np.dstack((quark_c1[:,:,index],quark_c2[:,:,index],quark_c3[:,:,index]))
-	#quark_image[:,:,:,index]= quark_image[:,:,:,index]/(std_image+r)quark_image[:,:,:,index]-mean_image#
-
+	
 
 
 
@@ -385,7 +364,7 @@ gluon_name='image_pythia1_2_color'
 
 
 
-#if __name__=='__main__':
+
     
 p1.join()
 p2.join()
@@ -400,7 +379,6 @@ p6.join()
 p7.join()
 
 
-#pixel.plotting(gi_gluon,gluon,gluon_name,train_gimage_path)
 
 plt.close()
 
